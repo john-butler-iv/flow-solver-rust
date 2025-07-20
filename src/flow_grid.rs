@@ -1,7 +1,5 @@
 /// This file handles the core data model, abstracted away from any specific UI. you can ask for
 /// various actions, and this will do validation and perform them.
-use std::mem::swap;
-
 pub struct FlowGrid {
     next_color_id: usize,
     cells: Vec<FlowCell>,
@@ -229,6 +227,129 @@ impl FlowGrid {
             Direction::Right if col + 1 < self.width => Some((row, col + 1)),
             _ => None,
         }
+    }
+
+    pub fn add_row(&mut self) {
+        self.cells.reserve(self.width);
+
+        for _ in 0..self.width {
+            self.cells.push(FlowCell::empty_with_id(self.cells.len()));
+        }
+        self.height += 1;
+    }
+
+    fn can_remove_edge_cell(cell: &FlowCell) -> bool {
+        if cell.is_source {
+            return false;
+        }
+        if cell.num_connections() > 0 {
+            return false;
+        }
+        true
+    }
+    pub fn can_remove_row(&self) -> bool {
+        if self.height == 1 {
+            return false;
+        }
+        for index in (self.get_index(self.height - 1, 0).expect("Non-empty grid"))..self.cells.len()
+        {
+            if !Self::can_remove_edge_cell(&self.cells[index]) {
+                return false;
+            }
+        }
+        true
+    }
+
+    pub fn try_remove_row(&mut self) -> bool {
+        if !self.can_remove_row() {
+            return false;
+        }
+
+        for _ in 0..self.width {
+            self.cells.pop();
+        }
+
+        self.height -= 1;
+        true
+    }
+
+    pub fn add_col(&mut self) {
+        let old_width = self.width;
+        let old_cells = {
+            // kinda weird operation, but we want to interleave old and new tiles, so we extract the old
+            // ones and put into place a new buffer that will be filled right after this.
+            let mut new_cells = Vec::with_capacity(self.cells.len() + self.height);
+            std::mem::swap(&mut self.cells, &mut new_cells);
+            new_cells
+        };
+
+        for (old_cell_index, mut cell) in old_cells.into_iter().enumerate() {
+            let old_cell_row = old_cell_index / old_width;
+            let old_cell_col = old_cell_index % old_width;
+
+            if let CellColor::Empty(old_color_index) = cell.color {
+                let old_color_row = old_color_index / old_width;
+                let new_color_index = old_color_index + old_color_row;
+                cell.color = CellColor::Empty(new_color_index);
+            }
+            self.cells.push(cell);
+
+            if old_cell_col == old_width - 1 {
+                let new_cell_index = old_cell_index + old_cell_row;
+                self.cells.push(FlowCell::empty_with_id(new_cell_index));
+            }
+        }
+
+        self.width += 1;
+    }
+
+    pub fn can_remove_col(&self) -> bool {
+        if self.width == 1 {
+            return false;
+        }
+
+        for row in 0..self.height {
+            let cell = self
+                .get(row, self.width - 1)
+                .expect("non-empty grid and height*width = cells.len");
+            if !Self::can_remove_edge_cell(cell) {
+                return false;
+            }
+        }
+        true
+    }
+
+    pub fn try_remove_col(&mut self) -> bool {
+        if !self.can_remove_col() {
+            return false;
+        }
+
+        let old_width = self.width;
+        let old_cells = {
+            // kinda weird operation, but we want to interleave old and new tiles, so we extract the old
+            // ones and put into place a new buffer that will be filled right after this.
+            let mut new_cells = Vec::with_capacity(self.cells.len() + self.height);
+            std::mem::swap(&mut self.cells, &mut new_cells);
+            new_cells
+        };
+        // TODO I can make this in-place if performance becomes a concern. I think this is just easier to read.
+
+        for (old_cell_index, mut cell) in old_cells.into_iter().enumerate() {
+            let old_cell_col = old_cell_index % old_width;
+
+            if let CellColor::Empty(old_color_index) = cell.color {
+                let old_color_row = old_color_index / old_width;
+                let new_color_index = old_color_index - old_color_row;
+                cell.color = CellColor::Empty(new_color_index);
+            }
+
+            if old_cell_col != old_width - 1 {
+                self.cells.push(cell);
+            }
+        }
+
+        self.width -= 1;
+        true
     }
 
     pub fn try_set_new_source(&mut self, row: usize, col: usize) -> bool {
@@ -527,7 +648,7 @@ impl FlowGrid {
         );
 
         if let CellColor::Colored(_) = cell1.color {
-            swap(&mut core_params1, &mut core_params2);
+            std::mem::swap(&mut core_params1, &mut core_params2);
         }
 
         self.connect_core(core_params1.0, core_params1.1);

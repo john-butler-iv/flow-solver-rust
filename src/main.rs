@@ -57,7 +57,23 @@ impl App for FlowSolverApp {
         });
         CentralPanel::default().show(ctx, |ui| {
             ui.label("Click on the grid to place a flow source. Click and drag to connect them.");
-
+            ui.horizontal(|ui| {
+                // TODO disable remove row/col if can't remove
+                ui.button("- row")
+                    .clicked()
+                    .then(|| self.flow_canvas.grid.try_remove_row());
+                ui.button("+ row")
+                    .clicked()
+                    .then(|| self.flow_canvas.grid.add_row());
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    ui.button("+ column")
+                        .clicked()
+                        .then(|| self.flow_canvas.grid.add_col());
+                    ui.button("- column")
+                        .clicked()
+                        .then(|| self.flow_canvas.grid.try_remove_col());
+                });
+            });
             ui.add(&mut self.flow_canvas);
             ui.horizontal(|ui| {
                 ui.label(format!(
@@ -95,7 +111,6 @@ fn main() -> eframe::Result {
     let native_options = NativeOptions {
         viewport: ViewportBuilder::default()
             .with_inner_size([ui_width, ui_height])
-            .with_min_inner_size([ui_width, ui_height])
             .with_icon(
                 icon_data::from_png_bytes(&include_bytes!("../assets/pipe-512.png")[..])
                     .expect("Failed to load icon"),
