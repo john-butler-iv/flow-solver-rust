@@ -1,3 +1,5 @@
+/// This file handles the core data model, abstracted away from any specific UI. you can ask for
+/// various actions, and this will do validation and perform them.
 use std::mem::swap;
 
 pub struct FlowGrid {

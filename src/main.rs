@@ -1,3 +1,5 @@
+/// This file has the basic, overall UI layout. All of the harder UI interactions have been
+/// extracted into flow_canvas, and the core data model is in flow_grid.
 mod flow_canvas;
 mod flow_grid;
 

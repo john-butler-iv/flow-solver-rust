@@ -1,3 +1,6 @@
+/// This file handles most of the complexity with the UI. That is, this file is responsible for
+/// 1. taking user input and interpretting it as commands for the underlying data model in flow_grid
+/// 2. interpretting the data from flow_grid and displaying it to the user
 use crate::{
     CELL_SIZE, COLOR_INDEX, GRID_BORDER_WIDTH, PIPE_INSET_DIST, PIPE_LENGTH, PIPE_WIDTH,
     SOURCE_RADIUS,
