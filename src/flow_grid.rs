@@ -472,6 +472,8 @@ impl FlowGrid {
             .get_mut(row, col)
             .expect("previously checked cells are in bounds");
         cell.remove_connection(direction);
+        // TODO We should probably just always use the tail in this direction
+        // if the tail is not a source, recolor every segment with Uncolored(index)
         if cell.num_connections() == 0 && !cell.is_source {
             cell.color = CellColor::Empty(index);
         }
@@ -480,6 +482,8 @@ impl FlowGrid {
             .offset_get_mut(row, col, direction)
             .expect("previously checked cells are in bounds");
         offset_cell.remove_connection(direction.opposite());
+        // TODO We should probably just always use the tail in this direction
+        // if the tail is not a source, recolor every segment with Uncolored(index)
         if offset_cell.num_connections() == 0 && !offset_cell.is_source {
             offset_cell.color = CellColor::Empty(other_index);
         }
