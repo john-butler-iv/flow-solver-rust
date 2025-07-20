@@ -105,8 +105,9 @@ fn main() -> eframe::Result {
     const GRID_HEIGHT: usize = 7;
     const GRID_WIDTH: usize = 7;
 
-    let ui_width = GRID_WIDTH as f32 * CELL_SIZE + 55.0;
-    let ui_height = GRID_HEIGHT as f32 * CELL_SIZE + 130.0;
+    // TODO there's got to be a better way to resize based on rendered contents
+    let ui_width = GRID_WIDTH as f32 * CELL_SIZE + 35.0;
+    let ui_height = GRID_HEIGHT as f32 * CELL_SIZE + 140.0;
 
     let native_options = NativeOptions {
         viewport: ViewportBuilder::default()
