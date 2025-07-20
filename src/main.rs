@@ -89,8 +89,8 @@ impl App for FlowSolverApp {
                     });
                 });
             });
-            ui.button("Reset")
-                .on_hover_text("Reset the grid to its initial state")
+            ui.button("Clear")
+                .on_hover_text("Remove all sources and pipes you've placed")
                 .clicked()
                 .then(|| {
                     self.flow_canvas = flow_canvas::FlowCanvas::with_size(
